@@ -7,7 +7,7 @@ function doGet(e) {
 
 // Function to add student data to Sheet
 function addStudent(data) {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   var sheet = ss.getSheetByName('Students');
   var lastRow = sheet.getLastRow();
   var serialNo = lastRow; // Auto serial number starting from 1 (header is row 1)
@@ -15,7 +15,7 @@ function addStudent(data) {
   // Upload image to Drive and get link
   var billLink = '';
   if (data.bill) {
-    var folder = DriveApp.getFolderById('YOUR_DRIVE_FOLDER_ID'); // Create a folder in Drive and get its ID
+    var folder = DriveApp.getFolderById('1wNdc3fXPkunb02MS8PnF5PPZsg5qNDcG'); // Create a folder in Drive and get its ID
     var blob = Utilities.newBlob(Utilities.base64Decode(data.bill), 'image/jpeg', 'bill.jpg');
     var file = folder.createFile(blob);
     billLink = file.getUrl();
@@ -38,24 +38,24 @@ function addStudent(data) {
 
 // Function to get all students
 function getStudents() {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   var sheet = ss.getSheetByName('Students');
   return sheet.getDataRange().getValues();
 }
 
 // Functions for dropdown options
 function getDepartments() {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   return ss.getSheetByName('Departments').getRange('A:A').getValues().flat().filter(String);
 }
 
 function getColleges() {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   return ss.getSheetByName('Colleges').getRange('A:A').getValues().flat().filter(String);
 }
 
 function getStatuses() {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   return ss.getSheetByName('Statuses').getRange('A:A').getValues().flat().filter(String);
 }
 
@@ -68,7 +68,7 @@ function filterStudents(filterType, filterValue) {
 
 // Function to edit a student (basic: overwrite row)
 function editStudent(serialNo, data) {
-  var ss = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID');
+  var ss = SpreadsheetApp.openById('1idMryxylQWxRNs0W_pRnh2LdNC30iDazIzP0XKvAa50');
   var sheet = ss.getSheetByName('Students');
   var row = parseInt(serialNo) + 1; // Rows start at 1, header is 1
   sheet.getRange(row, 2, 1, 9).setValues([[data.date, data.name, data.department, data.college, data.remarks, data.mobile, data.reference, data.status, data.billLink]]);
@@ -78,4 +78,5 @@ function editStudent(serialNo, data) {
 // Include client-side JS in HTML
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
+
 }

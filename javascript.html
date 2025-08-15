@@ -1,0 +1,116 @@
+<script>
+  // Show/hide sections
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+    if (id === 'details') loadDetails();
+    if (id === 'dept-filter' || id === 'entry') loadDropdowns();
+    // Load for other filters similarly
+  }
+
+  // Set current date
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('date').value = new Date().toISOString().split('T');
+  });
+
+  // Load dropdowns from Sheet
+  function loadDropdowns() {
+    google.script.run.withSuccessHandler(depts => {
+      let deptSelect = document.getElementById('department');
+      deptSelect.innerHTML = '';
+      depts.forEach(d => deptSelect.options.add(new Option(d, d)));
+    }).getDepartments();
+
+    google.script.run.withSuccessHandler(cols => {
+      let colSelect = document.getElementById('college');
+      colSelect.innerHTML = '';
+      cols.forEach(c => colSelect.options.add(new Option(c, c)));
+    }).getColleges();
+
+    google.script.run.withSuccessHandler(stats => {
+      let statSelect = document.getElementById('status');
+      statSelect.innerHTML = '';
+      stats.forEach(s => statSelect.options.add(new Option(s, s)));
+    }).getStatuses();
+
+    // Load filter dropdowns similarly for dept-filter, college-filter
+    google.script.run.withSuccessHandler(depts => {
+      let deptFilter = document.getElementById('deptSelect');
+      deptFilter.innerHTML = '';
+      depts.forEach(d => deptFilter.options.add(new Option(d, d)));
+    }).getDepartments();
+    // Repeat for collegeSelect
+  }
+
+  // Submit form
+  document.getElementById('studentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    let formData = {
+      date: document.getElementById('date').value,
+      name: document.getElementById('name').value,
+      department: document.getElementById('department').value,
+      college: document.getElementById('college').value,
+      remarks: document.getElementById('remarks').value,
+      mobile: document.getElementById('mobile').value,
+      reference: document.getElementById('reference').value,
+      status: document.getElementById('status').value
+    };
+
+    // Handle file upload as base64
+    let file = document.getElementById('bill').files;
+    if (file) {
+      let reader = new FileReader();
+      reader.onload = () => {
+        formData.bill = reader.result.split(',')[1]; // Base64
+        google.script.run.withSuccessHandler(alert).addStudent(formData);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      google.script.run.withSuccessHandler(alert).addStudent(formData);
+    }
+  });
+
+  // Load student details table
+  function loadDetails() {
+    google.script.run.withSuccessHandler(data => {
+      let tbody = document.querySelector('#detailsTable tbody');
+      tbody.innerHTML = '';
+      data.slice(1).forEach((row, index) => { // Skip header
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>
+          <td>${row[5]}</td><td><a href="tel:${row[6]}">${row[6]}</a></td><td>${row[7]}</td><td>${row[8]}</td>
+          <td><a href="${row[9]}" target="_blank">View</a> | <a href="${row[9]}" download>Download</a></td>
+          <td><button onclick="editRow(${row})">Edit</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }).getStudents();
+  }
+
+  // Basic edit (prompt for new values, you can improve to a form)
+  function editRow(serial) {
+    // Fetch current data and prompt, then call editStudent
+    let newData = { /* Prompt user for updates */ }; // Implement prompts or modal
+    google.script.run.withSuccessHandler(alert).editStudent(serial, newData);
+    loadDetails();
+  }
+
+  // Filter function
+  function filterData(type) {
+    let value = type === 'department' ? document.getElementById('deptSelect').value :
+                type === 'college' ? document.getElementById('collegeSelect').value :
+                document.getElementById('refInput').value;
+    google.script.run.withSuccessHandler(data => {
+      let tableId = type === 'department' ? 'deptTable' : type === 'college' ? 'collegeTable' : 'refTable';
+      let tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = '';
+      data.forEach(row => { // Includes header, but filter skips it if needed
+        let tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>
+                        <td>${row[5]}</td><td><a href="tel:${row[6]}">${row[6]}</a></td><td>${row[7]}</td><td>${row[8]}</td>
+                        <td><a href="${row[9]}" target="_blank">View</a> | <a href="${row[9]}" download>Download</a></td>`;
+        tbody.appendChild(tr);
+      });
+    }).filterStudents(type, value);
+  }
+</script>
